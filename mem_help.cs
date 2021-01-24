@@ -1,55 +1,57 @@
-using Memory.Utils;
+using Memory.utils;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Memory.Win32
+namespace Memory.bit32
 {
-    class MemoryHelper32
+    class mem_help32
     {
         Process process;
-        public MemoryHelper32(Process TargetProcess)
+        public mem_help32(string target)
         {
-            process = TargetProcess;
+            process = Process.GetProcessesByName(target)[0];
+            if (process == null)
+                return;
         }
 
-        public uint GetBaseAddress(uint StartingAddress)
+        public uint get_base_address(uint start_address)
         {
-            return (uint)process.MainModule.BaseAddress + StartingAddress;
+            return (uint)process.MainModule.BaseAddress + start_address;
         }
 
-        public byte[] ReadMemoryBytes(uint MemoryAddress, uint Bytes)
+        public byte[] read_mem_bytes(uint mem_address, uint bytes)
         {
-            byte[] data = new byte[Bytes];
-            ReadProcessMemory(process.Handle, MemoryAddress, data, data.Length, IntPtr.Zero);
+            byte[] data = new byte[bytes];
+            ReadProcessMemory(process.Handle, mem_address, data, data.Length, IntPtr.Zero);
             return data;
         }
 
-        public T ReadMemory<T>(uint MemoryAddress)
+        public T read_mem<T>(uint mem_address)
         {
-            byte[] data = ReadMemoryBytes(MemoryAddress, (uint)Marshal.SizeOf(typeof(T)));
+            byte[] data = read_mem_bytes(mem_address, (uint)Marshal.SizeOf(typeof(T)));
 
             T t;
-            GCHandle PinnedStruct = GCHandle.Alloc(data, GCHandleType.Pinned);
-            try { t = (T)Marshal.PtrToStructure(PinnedStruct.AddrOfPinnedObject(), typeof(T)); }
+            GCHandle pinned_struct = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try { t = (T)Marshal.PtrToStructure(pinned_struct.AddrOfPinnedObject(), typeof(T)); }
             catch (Exception ex) { throw ex; }
-            finally { PinnedStruct.Free(); }
+            finally { pinned_struct.Free(); }
 
             return t;
         }
 
-        public bool WriteMemory<T>(uint MemoryAddress, T Value)
+        public bool write_mem<T>(uint mem_address, T value)
         {
             IntPtr bw = IntPtr.Zero;
 
-            int sz = ObjectType.GetSize<T>();
-            byte[] data = ObjectType.GetBytes<T>(Value);
-            bool result = WriteProcessMemory(process.Handle, MemoryAddress, data, sz, out bw);
+            int sz = object_type.get_size<T>();
+            byte[] data = object_type.get_bytes<T>(value);
+            bool result = WriteProcessMemory(process.Handle, mem_address, data, sz, out bw);
             return result && bw != IntPtr.Zero;
         }
 
-        public void Close()
+        public void close()
         {
             CloseHandle(process.Handle);
         }
@@ -78,53 +80,55 @@ namespace Memory.Win32
     }
 }
 
-namespace Memory.Win64
+namespace Memory.bit64
 {
-    class MemoryHelper64
+    class mem_help64
     {
         Process process;
 
-        public MemoryHelper64(Process TargetProcess)
+        public mem_help64(string target)
         {
-            process = TargetProcess;
+            process = Process.GetProcessesByName(target)[0];
+            if (process == null)
+                return;
         }
 
-        public ulong GetBaseAddress(ulong StartingAddress)
+        public ulong get_base_address(ulong start_address)
         {
-            return (ulong)process.MainModule.BaseAddress.ToInt64() + StartingAddress;
+            return (ulong)process.MainModule.BaseAddress.ToInt64() + start_address;
         }
 
-        public byte[] ReadMemoryBytes(ulong MemoryAddress, int Bytes)
+        public byte[] read_mem_bytes(ulong mem_address, int bytes)
         {
-            byte[] data = new byte[Bytes];
-            ReadProcessMemory(process.Handle, MemoryAddress, data, data.Length, IntPtr.Zero);
+            byte[] data = new byte[bytes];
+            ReadProcessMemory(process.Handle, mem_address, data, data.Length, IntPtr.Zero);
             return data;
         }
 
-        public T ReadMemory<T>(ulong MemoryAddress)
+        public T read_mem<T>(ulong mem_address)
         {
-            byte[] data = ReadMemoryBytes(MemoryAddress, Marshal.SizeOf(typeof(T)));
+            byte[] data = read_mem_bytes(mem_address, Marshal.SizeOf(typeof(T)));
 
             T t;
-            GCHandle PinnedStruct = GCHandle.Alloc(data, GCHandleType.Pinned);
-            try { t = (T)Marshal.PtrToStructure(PinnedStruct.AddrOfPinnedObject(), typeof(T)); }
+            GCHandle pinned_struct = GCHandle.Alloc(data, GCHandleType.Pinned);
+            try { t = (T)Marshal.PtrToStructure(pinned_struct.AddrOfPinnedObject(), typeof(T)); }
             catch (Exception ex) { throw ex; }
-            finally { PinnedStruct.Free(); }
+            finally { pinned_struct.Free(); }
 
             return t;
         }
 
-        public bool WriteMemory<T>(ulong MemoryAddress, T Value)
+        public bool write_mem<T>(ulong mem_address, T value)
         {
             IntPtr bw = IntPtr.Zero;
 
-            int sz = ObjectType.GetSize<T>();
-            byte[] data = ObjectType.GetBytes<T>(Value);
-            bool result = WriteProcessMemory(process.Handle, MemoryAddress, data, sz, out bw);
+            int sz = object_type.get_size<T>();
+            byte[] data = object_type.get_bytes<T>(value);
+            bool result = WriteProcessMemory(process.Handle, mem_address, data, sz, out bw);
             return result && bw != IntPtr.Zero;
         }
 
-        public void Close()
+        public void close()
         {
             CloseHandle(process.Handle);
         }
@@ -153,56 +157,56 @@ namespace Memory.Win64
     }
 }
 
-namespace Memory.Utils
+namespace Memory.utils
 {
-    static class MemoryUtils
+    static class mem_utils
     {
-        public static uint OffsetCalculator(Win32.MemoryHelper32 TargetMemory, uint BaseAddress, int[] Offsets)
+        public static uint offset_calculator(bit32.mem_help32 target_mem, uint base_address, int[] offsets)
         {
-            var address = BaseAddress;
-            foreach (uint offset in Offsets)
+            var address = base_address;
+            foreach (uint offset in offsets)
             {
-                address = TargetMemory.ReadMemory<uint>(address) + offset;
+                address = target_mem.read_mem<uint>(address) + offset;
             }
             return address;
         }
 
-        public static ulong OffsetCalculator(Win64.MemoryHelper64 TargetMemory, ulong BaseAddress, int[] Offsets)
+        public static ulong offset_calculator(bit64.mem_help64 target_mem, ulong base_address, int[] offsets)
         {
-            var address = BaseAddress;
-            foreach (uint offset in Offsets)
+            var address = base_address;
+            foreach (uint offset in offsets)
             {
-                address = TargetMemory.ReadMemory<ulong>(address) + offset;
+                address = target_mem.read_mem<ulong>(address) + offset;
             }
             return address;
         }
     }
 
-    public static class ObjectType
+    public static class object_type
     {
-        public static int GetSize<T>()
+        public static int get_size<T>()
         {
             return Marshal.SizeOf(typeof(T));
         }
 
-        public static byte[] GetBytes<T>(T Value)
+        public static byte[] get_bytes<T>(T value)
         {
             string typename = typeof(T).ToString();
             Console.WriteLine(typename);
             switch (typename)
             {
                 case "System.Single":
-                    return BitConverter.GetBytes((float)Convert.ChangeType(Value, typeof(float)));
+                    return BitConverter.GetBytes((float)Convert.ChangeType(value, typeof(float)));
                 case "System.Int32":
-                    return BitConverter.GetBytes((int)Convert.ChangeType(Value, typeof(int)));
+                    return BitConverter.GetBytes((int)Convert.ChangeType(value, typeof(int)));
                 case "System.Int64":
-                    return BitConverter.GetBytes((long)Convert.ChangeType(Value, typeof(long)));
+                    return BitConverter.GetBytes((long)Convert.ChangeType(value, typeof(long)));
                 case "System.Double":
-                    return BitConverter.GetBytes((double)Convert.ChangeType(Value, typeof(double)));
+                    return BitConverter.GetBytes((double)Convert.ChangeType(value, typeof(double)));
                 case "System.Byte":
-                    return BitConverter.GetBytes((byte)Convert.ChangeType(Value, typeof(byte)));
+                    return BitConverter.GetBytes((byte)Convert.ChangeType(value, typeof(byte)));
                 case "System.String":
-                    return Encoding.Unicode.GetBytes((string)Convert.ChangeType(Value, typeof(string)));
+                    return Encoding.Unicode.GetBytes((string)Convert.ChangeType(value, typeof(string)));
                 default:
                     return new byte[0];
             }
