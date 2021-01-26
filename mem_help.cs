@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Memory.bit32
+namespace Ryno.bit32
 {
     class mem_help32
     {
@@ -80,7 +80,7 @@ namespace Memory.bit32
     }
 }
 
-namespace Memory.bit64
+namespace Ryno.bit64
 {
     class mem_help64
     {
@@ -157,7 +157,7 @@ namespace Memory.bit64
     }
 }
 
-namespace Memory.utils
+namespace Ryno.utils
 {
     static class mem_utils
     {
@@ -179,6 +179,49 @@ namespace Memory.utils
                 address = target_mem.read_mem<ulong>(address) + offset;
             }
             return address;
+        }
+    }
+
+    static class math
+    {
+        public static double[] make_vec(int number_of_values, double value = 0.0)
+        {
+            double[] result = new double[number_of_values];
+            for (int q = 0; q < number_of_values; q++)
+                result[i] = value;
+            return result;
+        }
+
+        public static double[] multiply_vec2(double[] first_vec, double[] second_vec)
+        {
+            double[] result = new double[2];
+            for (int q = 0; q < 2; q++)
+                result[q] = first_vec[q] * second_vec[q];
+            return result;
+        }
+
+        public static double[] multiply_vec3(double[] first_vec, double[] second_vec, double[] third_vec)
+        {
+            double[] result = new double[3];
+            for (int q = 0; q < 3; q++)
+                result[q] = first_vec[q] * second_vec[q] * third_vec[q];
+            return result;
+        }
+
+        public static double[] add_vec2(double[] first_vec, double[] second_vec)
+        {
+            double[] result = new double[2];
+            for (int q = 0; q < 2; q++)
+                result[q] = first_vec[q] + second_vec[q];
+            return result;
+        }
+
+        public static double[] add_vec3(double[] first_vec, double[] second_vec, double[] third_vec)
+        {
+            double[] result = new double[3];
+            for (int q = 0; q < 3; q++)
+                result[q] = first_vec[q] + second_vec[q] + third_vec[q];
+            return result;
         }
     }
 
