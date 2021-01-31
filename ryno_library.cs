@@ -1,4 +1,4 @@
-using Memory.utils;
+﻿using Ryno.utils;
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -180,48 +180,167 @@ namespace Ryno.utils
             }
             return address;
         }
+
+        public static uint add_mem(bit32.mem_help32 target_mem, uint first_hex, uint second_hex)
+        {
+            uint address = target_mem.read_mem<uint>(first_hex) + second_hex;
+            return address;
+        }
+
+        public static ulong add_mem(bit64.mem_help64 target_mem, ulong first_hex, ulong second_hex)
+        {
+            ulong address = target_mem.read_mem<ulong>(first_hex) + second_hex;
+            return address;
+        }
+
+        public static uint sub_mem(bit32.mem_help32 target_mem, uint first_hex, uint second_hex)
+        {
+            uint address = target_mem.read_mem<uint>(first_hex) - second_hex;
+            return address;
+        }
+
+        public static ulong sub_mem(bit64.mem_help64 target_mem, ulong first_hex, ulong second_hex)
+        {
+            ulong address = target_mem.read_mem<ulong>(first_hex) - second_hex;
+            return address;
+        }
+    }
+
+    class vec2
+    {
+        public float x;
+        public float y;
+
+        public vec2() { }
+
+        public vec2(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+        }
+
+        public float distance(vec2 vector)
+        {
+            float dx = vector.x - x;
+            float dy = vector.y - y;
+            return (float)Math.Sqrt(dx * dx + dy * dy);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}", Math.Round(x, 2), Math.Round(y, 2));
+        }
+
+        public static vec2 multiply_vec2(vec2 first_vec, vec2 second_vec)
+        {
+            vec2 result = new vec2();
+            result.x = first_vec.x * second_vec.x;
+            result.y = first_vec.y * second_vec.y;
+            return result;
+        }
+
+        public static vec2 add_vec2(vec2 first_vec, vec2 second_vec)
+        {
+            vec2 result = new vec2();
+            result.x = first_vec.x + second_vec.x;
+            result.y = first_vec.y + second_vec.y;
+            return result;
+        }
+    }
+
+    public class vec3
+    {
+        public float x;
+        public float y;
+        public float z;
+
+        public vec3() { }
+
+        public vec3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public float distance(vec3 vector)
+        {
+            float dx = vector.x - x;
+            float dy = vector.y - y;
+            float dz = vector.z - z;
+            return (float)Math.Sqrt(dx * dx + dy * dy + dz * dz);
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}", Math.Round(x, 2), Math.Round(y, 2), Math.Round(z, 2));
+        }
+
+        public static vec3 multiply_vec3(vec3 first_vec, vec3 second_vec)
+        {
+            vec3 result = new vec3();
+            result.x = first_vec.x * second_vec.x;
+            result.y = first_vec.y * second_vec.y;
+            result.z = first_vec.z * second_vec.z;
+            return result;
+        }
+
+        public static vec3 add_vec3(vec3 first_vec, vec3 second_vec)
+        {
+            vec3 result = new vec3();
+            result.x = first_vec.x + second_vec.x;
+            result.y = first_vec.y + second_vec.y;
+            result.z = first_vec.z + second_vec.z;
+            return result;
+        }
+    }
+
+    public class vec4
+    {
+        public float x;
+        public float y;
+        public float z;
+        public float w;
+
+        public vec4() { }
+
+        public vec4(float x, float y, float z, float w)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = w;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0}, {1}, {2}, {3}", x, y, z, w);
+        }
     }
 
     static class math
     {
-        public static double[] make_vec(int number_of_values, double value = 0.0)
-        {
-            double[] result = new double[number_of_values];
-            for (int q = 0; q < number_of_values; q++)
-                result[i] = value;
-            return result;
-        }
+        public static float pi = 3.14159265358979323846f;
 
-        public static double[] multiply_vec2(double[] first_vec, double[] second_vec)
+        public static vec2 angle_calculator(vec3 vec_start, vec3 vec_final)
         {
-            double[] result = new double[2];
-            for (int q = 0; q < 2; q++)
-                result[q] = first_vec[q] * second_vec[q];
-            return result;
-        }
+            vec2 angle = new vec2();
 
-        public static double[] multiply_vec3(double[] first_vec, double[] second_vec, double[] third_vec)
-        {
-            double[] result = new double[3];
-            for (int q = 0; q < 3; q++)
-                result[q] = first_vec[q] * second_vec[q] * third_vec[q];
-            return result;
-        }
+            //calculate horizontal angle between enemy and player (yaw)
+            float dx = vec_final.x - vec_start.x;
+            float dy = vec_final.y - vec_start.y;
+            double angle_yaw = Math.Atan2(dy, dx) * 180 / pi;
 
-        public static double[] add_vec2(double[] first_vec, double[] second_vec)
-        {
-            double[] result = new double[2];
-            for (int q = 0; q < 2; q++)
-                result[q] = first_vec[q] + second_vec[q];
-            return result;
-        }
+            //calculate verticle angle between enemy and player (pitch)
+            double distance = Math.Sqrt(dx * dx + dy * dy);
+            float dz = vec_final.z - vec_start.z;
+            double angle_pitch = Math.Atan2(dz, distance) * 180 / pi;
 
-        public static double[] add_vec3(double[] first_vec, double[] second_vec, double[] third_vec)
-        {
-            double[] result = new double[3];
-            for (int q = 0; q < 3; q++)
-                result[q] = first_vec[q] + second_vec[q] + third_vec[q];
-            return result;
+            //set self angles to calculated angles
+            angle.x = (float)angle_yaw + 90;
+            angle.y = (float)angle_pitch;
+
+            return angle;
         }
     }
 
